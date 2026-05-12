@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -33,6 +34,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures{
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -51,4 +55,10 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:$versionRetrofit")
     implementation("com.squareup.retrofit2:converter-gson:$versionRetrofit")
     implementation("com.squareup.okhttp3:okhttp:$versionRetrofit")
+
+    //Room
+    var room_version = "2.8.4"
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version") // Для Java
+    ksp("androidx.room:room-compiler:$room_version")// Для Kotlin
 }
