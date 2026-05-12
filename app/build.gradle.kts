@@ -45,4 +45,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+
+    //Retrofit
+    val versionRetrofit = "3.0.0"
+    implementation("com.squareup.retrofit2:retrofit:$versionRetrofit")
+    implementation("com.squareup.retrofit2:converter-gson:$versionRetrofit")
+    implementation("com.squareup.okhttp3:okhttp:$versionRetrofit")
 }

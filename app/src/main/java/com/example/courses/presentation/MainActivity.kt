@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
+        //открываем фрагмент с входом
         supportFragmentManager.beginTransaction()
             .replace(R.id.frameLayout, LoginFragment())
             .commit()
