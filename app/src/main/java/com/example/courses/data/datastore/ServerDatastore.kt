@@ -1,5 +1,6 @@
 package com.example.courses.data.datastore
 
+import android.annotation.SuppressLint
 import android.util.Log
 
 //import okhttp3.Call
@@ -19,6 +20,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import  com.example.courses.data.entity.CourseDTO
 import com.example.courses.data.entity.DataDTO
+import com.example.courses.data.mapper.CourseDtoMapper
+import com.example.courses.domain.CourseBusinessModel
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 
@@ -59,13 +62,14 @@ val testJSON=
       "}"
 
 class ServerDatastore {
+    val mapper = CourseDtoMapper()
     private fun createHttpClient() : OkHttpClient{
         return OkHttpClient.Builder()
             .build()
     }
 
-    fun sendRequest() : List<CourseDTO>{
-        var courseList : List<CourseDTO> = emptyList()
+    fun sendRequest() : List<CourseBusinessModel>{
+        var courseList : List<CourseBusinessModel> = emptyList()
 
         val gson = GsonBuilder().create();
         val retrofit = Retrofit.Builder()
@@ -85,6 +89,7 @@ class ServerDatastore {
         //Log.v("MainActivity", "List: ${list.courses.size}")
 
         call.enqueue(object : Callback<ResponseBody> {
+            @SuppressLint("NewApi")
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
                     // Получаем сырой ответ
@@ -92,7 +97,9 @@ class ServerDatastore {
                     Log.d("MainActivity", "Response: $responseBody")
                     val res = gson.fromJson<DataDTO>(responseBody, DataDTO::class.java)
                     if(!res.courses.isNullOrEmpty())
-                        courseList = res.courses
+                        courseList = res.courses.map{
+                            mapper.map(it)
+                        }
                     Log.v("MainActivity", "Res: ${res.courses.size}")
                 } else {
                     // Обработка ошибки
