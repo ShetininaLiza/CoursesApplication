@@ -80,9 +80,9 @@ class ServerDatastore {
         Log.v("Datastore", "__________________CALL")
 
         //ЭТО НАДО ДЛЯ ПРОВЕРКИ
-        var list = gson.fromJson<DataDTO>(testJSON, DataDTO::class.java)
-        Log.v("MainActivity", "Test_JSON: $testJSON")
-        Log.v("MainActivity", "List: ${list.courses.size}")
+        //var list = gson.fromJson<DataDTO>(testJSON, DataDTO::class.java)
+        //Log.v("MainActivity", "Test_JSON: $testJSON")
+        //Log.v("MainActivity", "List: ${list.courses.size}")
 
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -90,8 +90,9 @@ class ServerDatastore {
                     // Получаем сырой ответ
                     val responseBody = response.body()?.string()
                     Log.d("MainActivity", "Response: $responseBody")
-                    var res = gson.fromJson<DataDTO>(responseBody, DataDTO::class.java)
-                    courseList = res.courses
+                    val res = gson.fromJson<DataDTO>(responseBody, DataDTO::class.java)
+                    if(!res.courses.isNullOrEmpty())
+                        courseList = res.courses
                     Log.v("MainActivity", "Res: ${res.courses.size}")
                 } else {
                     // Обработка ошибки
