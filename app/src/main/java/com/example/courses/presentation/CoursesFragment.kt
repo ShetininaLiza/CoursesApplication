@@ -1,34 +1,51 @@
 package com.example.courses.presentation
 
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import com.example.courses.R
 import com.example.courses.data.datastore.ServerDatastore
+import com.example.courses.data.datastore.ServerDatastore.CoursesResult
+import com.example.courses.domain.CourseBusinessModel
+import com.example.courses.presentation.mapper.CourseViewMapper
+import com.example.courses.presentation.models.CourseViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [CoursesFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class CoursesFragment : Fragment(R.layout.fragment_courses) {
-    private val scope = CoroutineScope(Dispatchers.Main)
+    private val scope = CoroutineScope(Dispatchers.IO)
+    val mapper = CourseViewMapper()
+    val store = ServerDatastore()
+    val mutex = Mutex()
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var courseList = emptyList<CourseViewModel>()
+        Log.v("CoursesFragment", "Try get Course List")
         scope.launch {
-            val store = ServerDatastore()
-            store.sendRequest()
+            // Ждём завершения запроса
+            val result = store.getCoursesData()
+            //когда все законсчилось
+            when (result) {
+                is CoursesResult.Success -> {
+                    var courses = result.data.toList()
+                    Log.v("FRAGMENT", "get Course List || ${courses.size}")
+                }
+
+                is CoursesResult.Failure -> {
+                    Log.v("FRAGMENT", "get Course List || ERROR ${result.exception.message}")
+                    //showError("Ошибка загрузки: ${result.exception.message}")
+                }
+            }
         }
     }
 }
