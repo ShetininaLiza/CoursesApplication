@@ -12,10 +12,10 @@
         android:layout_height="wrap_content"
         android:text="Courses Fragment" />
 
-    <Button
-        android:id="@+id/btnNext"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Button" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/coursesList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#92D0D3" />
 
 </LinearLayout>

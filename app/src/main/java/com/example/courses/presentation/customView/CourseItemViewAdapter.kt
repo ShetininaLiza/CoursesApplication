@@ -25,6 +25,8 @@ class CourseItemViewAdapter : RecyclerView.Adapter<CourseItemViewAdapter.CourseV
 
     fun setList(data : List<CourseViewModel>){
         courseList = data
+        //метод для уведомления RecyclerView об изменении данных
+        notifyDataSetChanged()
     }
 
     override fun onBindViewHolder(
