@@ -35,11 +35,13 @@ class CourseItemViewAdapter : RecyclerView.Adapter<CourseItemViewAdapter.CourseV
     ) {
         val item = courseList[pozition]
         holder.title.setText(item.title)
+        holder.text.setText(item.text)
     }
 
     override fun getItemCount(): Int = courseList.size
 
     class CourseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         val title =itemView.findViewById<TextView>(R.id.text_titleCourse)
+        val text = itemView.findViewById<TextView>(R.id.textCourse)
     }
 }
