@@ -1,9 +1,12 @@
 package com.example.courses.presentation.customView
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.courses.R
 import com.example.courses.presentation.models.CourseViewModel
@@ -39,15 +42,20 @@ class CourseItemViewAdapter : RecyclerView.Adapter<CourseItemViewAdapter.CourseV
         holder.cost.setText(item.price.toString())
         holder.rate.setText(item.rate.toString())
         holder.startData.setText(item.startDate)
+        holder.btnFavorite.setOnClickListener {
+            Log.v("LIST ITEM", "Item COURSE LIST ${item.id}")
+        }
     }
 
     override fun getItemCount(): Int = courseList.size
 
     class CourseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+
         val title =itemView.findViewById<TextView>(R.id.text_titleCourse)
         val text = itemView.findViewById<TextView>(R.id.textCourse)
         val cost = itemView.findViewById<TextView>(R.id.textCost)
         val rate = itemView.findViewById<TextView>(R.id.textRate)
         val startData = itemView.findViewById<TextView>(R.id.textStartDate)
+        val btnFavorite = itemView.findViewById<Button>(R.id.btnFavorit)
     }
 }
