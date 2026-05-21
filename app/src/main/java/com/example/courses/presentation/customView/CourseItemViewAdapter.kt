@@ -9,11 +9,30 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.courses.R
+import com.example.courses.data.repository.FavouriteCoursesRepository
+import com.example.courses.domain.CourseBusinessModel
 import com.example.courses.presentation.models.CourseViewModel
 
 class CourseItemViewAdapter : RecyclerView.Adapter<CourseItemViewAdapter.CourseViewHolder>() {
 
-    var courseList = emptyList<CourseViewModel>()
+    var courseList : List<CourseViewModel> = emptyList()
+        set(newValue){
+            field = newValue
+            //метод для уведомления RecyclerView об изменении данных
+            notifyDataSetChanged()
+        }
+
+    var favouriteCourseList : List<CourseViewModel> = emptyList()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    var repository : FavouriteCoursesRepository? = null
+        set(value) {
+            field = value
+        }
+
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -24,12 +43,6 @@ class CourseItemViewAdapter : RecyclerView.Adapter<CourseItemViewAdapter.CourseV
             .inflate(R.layout.course_item, parent, false)
         val viewHolder = CourseViewHolder(itemView)
         return viewHolder
-    }
-
-    fun setList(data : List<CourseViewModel>){
-        courseList = data
-        //метод для уведомления RecyclerView об изменении данных
-        notifyDataSetChanged()
     }
 
     override fun onBindViewHolder(
@@ -44,7 +57,9 @@ class CourseItemViewAdapter : RecyclerView.Adapter<CourseItemViewAdapter.CourseV
         holder.startData.setText(item.startDate)
         holder.btnFavorite.setOnClickListener {
             Log.v("LIST ITEM", "Item COURSE LIST ${item.id}")
+            //repository.addFavouriteCourseList()
         }
+        Log.v("CourseItemViewAdapter", "CourseItemViewAdapter || ${favouriteCourseList.size}")
     }
 
     override fun getItemCount(): Int = courseList.size

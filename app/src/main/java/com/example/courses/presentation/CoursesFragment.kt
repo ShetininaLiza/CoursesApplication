@@ -3,28 +3,27 @@ package com.example.courses.presentation
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Room
 import com.example.courses.R
+import com.example.courses.data.datastore.AppDatabase
 import com.example.courses.data.datastore.ServerDatastore
 import com.example.courses.data.datastore.ServerDatastore.CoursesResult
+import com.example.courses.data.repository.FavouriteCoursesRepository
 import com.example.courses.domain.CourseBusinessModel
 import com.example.courses.presentation.customView.CourseItemViewAdapter
 import com.example.courses.presentation.mapper.CourseViewMapper
 import com.example.courses.presentation.models.CourseViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 class CoursesFragment : Fragment(R.layout.fragment_courses) {
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -33,18 +32,29 @@ class CoursesFragment : Fragment(R.layout.fragment_courses) {
     val mutex = Mutex()
     val courseAdapter = CourseItemViewAdapter()
     var courseList = emptyList<CourseViewModel>()
+    var favoruriteCoursesList: List<CourseViewModel> = emptyList()
     lateinit var coursesRecycle: RecyclerView
+
+    var repository: FavouriteCoursesRepository? = null
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //var courseList = emptyList<CourseViewModel>()
         Log.v("CoursesFragment", "Try get Course List")
+        val db = context?.let { Room.databaseBuilder(it, AppDatabase::class.java, "favourite_courses.db").build() }
+        repository = db?.let {FavouriteCoursesRepository(it)}
         runBlocking {
             readData()
         }
     }
-
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun readFavouriteCourse(){
+        scope.launch {
+            val buf = repository?.getFavouriteCouresList()
+            favoruriteCoursesList = buf?.map { mapper.map(it) }!!
+        }
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun readData(){
         var job = scope.launch {
@@ -72,7 +82,12 @@ class CoursesFragment : Fragment(R.layout.fragment_courses) {
         super.onViewCreated(view, savedInstanceState)
         coursesRecycle = view.findViewById<RecyclerView>(R.id.coursesList)
         coursesRecycle.layoutManager = LinearLayoutManager(view.context)
-        courseAdapter.setList(courseList)
+        courseAdapter.courseList = courseList
+        Log.v("LIST", "FAVOURITE COURSE LIST || ${favoruriteCoursesList?.size}")
+        if (favoruriteCoursesList.isNullOrEmpty())
+            favoruriteCoursesList = emptyList()
+        courseAdapter.favouriteCourseList = favoruriteCoursesList
+        courseAdapter.repository = repository
         coursesRecycle.adapter = courseAdapter
         Log.v("FRAGMENT", "FRAGMENT || onViewCreated")
     }
