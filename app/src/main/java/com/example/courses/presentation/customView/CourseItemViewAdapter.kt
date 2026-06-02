@@ -1,11 +1,13 @@
 package com.example.courses.presentation.customView
 
+import android.graphics.drawable.Icon
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -61,9 +63,25 @@ class CourseItemViewAdapter(private var repository : FavouriteCoursesRepository)
         holder.cost.setText(item.price.toString())
         holder.rate.setText(item.rate.toString())
         holder.startData.setText(item.startDate)
+
+        //если нашли в списке избранных курсов
+        if(favouriteCourseList.find { course->course.id == item.id }!=null){
+            holder.btnFavorite.setImageResource(android.R.drawable.star_big_on)
+        }else{
+            holder.btnFavorite.setImageResource(android.R.drawable.star_big_off)
+        }
+
         holder.btnFavorite.setOnClickListener {
             Log.v("LIST ITEM", "Item COURSE LIST ${item.id}")
-            repository.addFavouriteCourseList(repository.mapper.mapToBusinessModel(item))
+            val data = repository.mapper.mapToBusinessModel(item)
+            if(favouriteCourseList.find { course->course.id == item.id }!=null){
+                //holder.btnFavorite.setImageResource(android.R.drawable.star_big_on)
+                repository.removeFavouriteCourseList(data)
+            }else{
+                //holder.btnFavorite.setImageResource(android.R.drawable.star_big_off)
+                repository.addFavouriteCourseList(data)
+            }
+            //repository.addFavouriteCourseList(repository.mapper.mapToBusinessModel(item))
         }
         Log.v("CourseItemViewAdapter", "CourseItemViewAdapter || ${favouriteCourseList.size}")
     }
@@ -77,6 +95,6 @@ class CourseItemViewAdapter(private var repository : FavouriteCoursesRepository)
         val cost = itemView.findViewById<TextView>(R.id.textCost)
         val rate = itemView.findViewById<TextView>(R.id.textRate)
         val startData = itemView.findViewById<TextView>(R.id.textStartDate)
-        val btnFavorite = itemView.findViewById<Button>(R.id.btnFavorit)
+        val btnFavorite = itemView.findViewById<ImageButton>(R.id.btnFavourite)
     }
 }
