@@ -4,7 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.courses.data.entity.CourseDbModel
 
-@Database(entities = [CourseDbModel::class], version = 1)
+@Database(entities = [CourseDbModel::class], version = 2)
 abstract class AppDatabase : RoomDatabase(){
     abstract  fun courseDao(): DatabaseDatastore
 }

@@ -2,9 +2,10 @@ package com.example.courses.data.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.jetbrains.annotations.NotNull
 
 //моделька для БД
-@Entity(tableName = "courses_favourite")
+@Entity(tableName = "favourite_courses")
 class CourseDbModel(
     @PrimaryKey
     val id : Int,

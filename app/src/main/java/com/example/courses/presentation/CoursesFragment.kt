@@ -30,31 +30,41 @@ class CoursesFragment : Fragment(R.layout.fragment_courses) {
     val mapper = CourseViewMapper()
     val store = ServerDatastore()
     val mutex = Mutex()
-    val courseAdapter = CourseItemViewAdapter()
+    lateinit var courseAdapter: CourseItemViewAdapter
     var courseList = emptyList<CourseViewModel>()
     var favoruriteCoursesList: List<CourseViewModel> = emptyList()
     lateinit var coursesRecycle: RecyclerView
 
-    var repository: FavouriteCoursesRepository? = null
+    lateinit var repository: FavouriteCoursesRepository
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //var courseList = emptyList<CourseViewModel>()
         Log.v("CoursesFragment", "Try get Course List")
-        val db = context?.let { Room.databaseBuilder(it, AppDatabase::class.java, "favourite_courses.db").build() }
-        repository = db?.let {FavouriteCoursesRepository(it)}
+        val db = context.let {
+            Room.databaseBuilder(it!!, AppDatabase::class.java, "favourites_courses.db")
+                //.fallbackToDestructiveMigration(true)
+                .build() }
+        repository = db.let {FavouriteCoursesRepository(it)}
+        //favoruriteCoursesList = repository.getFavouriteCouresList().map { mapper.map(it) }
+        courseAdapter = CourseItemViewAdapter(repository)
         runBlocking {
             readData()
+            readFavouriteCourse()
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun readFavouriteCourse(){
         scope.launch {
-            val buf = repository?.getFavouriteCouresList()
-            favoruriteCoursesList = buf?.map { mapper.map(it) }!!
-        }
+            val buf = repository.getFavouriteCouresList()
+            favoruriteCoursesList = buf.map { mapper.map(it) }
+        }.join()
+        Log.v("FRAGMENT", "FRAGMENT || SIZE ${favoruriteCoursesList.size}")
     }
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun readData(){
         var job = scope.launch {
@@ -78,16 +88,19 @@ class CoursesFragment : Fragment(R.layout.fragment_courses) {
         job.join()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         coursesRecycle = view.findViewById<RecyclerView>(R.id.coursesList)
         coursesRecycle.layoutManager = LinearLayoutManager(view.context)
         courseAdapter.courseList = courseList
+        //var favoruriteCoursesList = repository.getFavouriteCouresList().map { mapper.map(it) }
+
         Log.v("LIST", "FAVOURITE COURSE LIST || ${favoruriteCoursesList?.size}")
         if (favoruriteCoursesList.isNullOrEmpty())
             favoruriteCoursesList = emptyList()
         courseAdapter.favouriteCourseList = favoruriteCoursesList
-        courseAdapter.repository = repository
+        //courseAdapter.repository = repository
         coursesRecycle.adapter = courseAdapter
         Log.v("FRAGMENT", "FRAGMENT || onViewCreated")
     }

@@ -8,7 +8,7 @@ import com.example.courses.data.entity.CourseDbModel
 
 @Dao
 interface DatabaseDatastore {
-    @Query("SELECT * FROM courses_favourite")
+    @Query("SELECT * FROM favourite_courses")
     //метод для получения списка заметок
     fun getFavouriteCourseList() : List<CourseDbModel>
 
@@ -20,6 +20,6 @@ interface DatabaseDatastore {
     //метод для удаления записи
     fun deleteCourseFromFavourite(course : CourseDbModel)
 
-    @Query("DELETE FROM courses_favourite WHERE id = :courseId")
+    @Query("DELETE FROM favourite_courses WHERE id = :courseId")
     fun deleteCourseFromFavouriteById(courseId : Int)
 }

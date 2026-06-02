@@ -1,5 +1,6 @@
 package com.example.courses.presentation.customView
 
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -7,13 +8,16 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Room
 import com.example.courses.R
+import com.example.courses.data.datastore.AppDatabase
 import com.example.courses.data.repository.FavouriteCoursesRepository
 import com.example.courses.domain.CourseBusinessModel
 import com.example.courses.presentation.models.CourseViewModel
 
-class CourseItemViewAdapter : RecyclerView.Adapter<CourseItemViewAdapter.CourseViewHolder>() {
+class CourseItemViewAdapter(private var repository : FavouriteCoursesRepository) : RecyclerView.Adapter<CourseItemViewAdapter.CourseViewHolder>() {
 
     var courseList : List<CourseViewModel> = emptyList()
         set(newValue){
@@ -28,11 +32,12 @@ class CourseItemViewAdapter : RecyclerView.Adapter<CourseItemViewAdapter.CourseV
             notifyDataSetChanged()
         }
 
-    var repository : FavouriteCoursesRepository? = null
+    /*
+    var repository : FavouriteCoursesRepository = FavouriteCoursesRepository()
         set(value) {
             field = value
         }
-
+    */
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -45,6 +50,7 @@ class CourseItemViewAdapter : RecyclerView.Adapter<CourseItemViewAdapter.CourseV
         return viewHolder
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(
         holder: CourseViewHolder,
         pozition: Int
@@ -57,7 +63,7 @@ class CourseItemViewAdapter : RecyclerView.Adapter<CourseItemViewAdapter.CourseV
         holder.startData.setText(item.startDate)
         holder.btnFavorite.setOnClickListener {
             Log.v("LIST ITEM", "Item COURSE LIST ${item.id}")
-            //repository.addFavouriteCourseList()
+            repository.addFavouriteCourseList(repository.mapper.mapToBusinessModel(item))
         }
         Log.v("CourseItemViewAdapter", "CourseItemViewAdapter || ${favouriteCourseList.size}")
     }
