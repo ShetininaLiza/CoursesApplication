@@ -44,7 +44,6 @@ class FavouriteCoursesRepository(
     @RequiresApi(Build.VERSION_CODES.O)
     fun addFavouriteCourseList(course : CourseBusinessModel){
         Log.v("FavouriteCoursesRepository", "FavouriteCoursesRepository || addFavouriteCourseList")
-        /*
         scope.launch {
             Log.v("FavouriteCoursesRepository", "FavouriteCoursesRepository || 1")
             val dao = database.courseDao()
@@ -55,10 +54,19 @@ class FavouriteCoursesRepository(
             dao.addCourseInFavourite(mapperModel)
             Log.v("FavouriteCoursesRepository", "FavouriteCoursesRepository || SAVE IN FAVOURITE COURSE")
         }
-        */
     }
 
     fun removeFavouriteCourseList(course : CourseBusinessModel){
         Log.v("FavouriteCoursesRepository", "FavouriteCoursesRepository || removeFavouriteCourseList")
+        scope.launch {
+            Log.v("FavouriteCoursesRepository", "remove || 1")
+            val dao = database.courseDao()
+            Log.v("FavouriteCoursesRepository", "remove || 2")
+            val mapperModel = mapper.mapToDbModel(course)
+            Log.v("FavouriteCoursesRepository", "remove || 3")
+            Log.v("FavouriteCoursesRepository", "remove || ${mapperModel.toString()}")
+            dao.deleteCourseFromFavourite(mapperModel)
+            Log.v("FavouriteCoursesRepository", "remove || SAVE IN FAVOURITE COURSE")
+        }
     }
 }

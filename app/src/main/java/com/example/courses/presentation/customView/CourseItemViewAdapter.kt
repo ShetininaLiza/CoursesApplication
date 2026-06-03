@@ -18,6 +18,9 @@ import com.example.courses.data.datastore.AppDatabase
 import com.example.courses.data.repository.FavouriteCoursesRepository
 import com.example.courses.domain.CourseBusinessModel
 import com.example.courses.presentation.models.CourseViewModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class CourseItemViewAdapter(private var repository : FavouriteCoursesRepository) : RecyclerView.Adapter<CourseItemViewAdapter.CourseViewHolder>() {
 
@@ -64,26 +67,58 @@ class CourseItemViewAdapter(private var repository : FavouriteCoursesRepository)
         holder.rate.setText(item.rate.toString())
         holder.startData.setText(item.startDate)
 
+        //val favouriteCourseList = repository.getFavouriteCouresList()
+        //ЭТО РАБОТАЕТ
+        /*
         //если нашли в списке избранных курсов
         if(favouriteCourseList.find { course->course.id == item.id }!=null){
             holder.btnFavorite.setImageResource(android.R.drawable.star_big_on)
         }else{
             holder.btnFavorite.setImageResource(android.R.drawable.star_big_off)
         }
-
+        */
+        //var favouriteCourseList = repository.getFavouriteCouresList()
+        setIconFavouriteCourse(item.id, holder.btnFavorite)
         holder.btnFavorite.setOnClickListener {
-            Log.v("LIST ITEM", "Item COURSE LIST ${item.id}")
-            val data = repository.mapper.mapToBusinessModel(item)
-            if(favouriteCourseList.find { course->course.id == item.id }!=null){
-                //holder.btnFavorite.setImageResource(android.R.drawable.star_big_on)
-                repository.removeFavouriteCourseList(data)
-            }else{
-                //holder.btnFavorite.setImageResource(android.R.drawable.star_big_off)
-                repository.addFavouriteCourseList(data)
-            }
-            //repository.addFavouriteCourseList(repository.mapper.mapToBusinessModel(item))
+            updateFavouriteList(item, holder.btnFavorite)
         }
+
         Log.v("CourseItemViewAdapter", "CourseItemViewAdapter || ${favouriteCourseList.size}")
+    }
+    fun updateFavouriteList(item : CourseViewModel, btnFavorite : ImageButton){
+        var favouriteCourseList = getFavouriteCoursesList()
+        //преобразуем
+        val data = repository.mapper.mapToBusinessModel(item)
+
+        if(favouriteCourseList.find { course->course.id == item.id }!=null){
+            Log.v("ADAPTER", "ADAPTER || updateFavouriteList || REMOVE")
+            repository.removeFavouriteCourseList(data)
+            btnFavorite.setImageResource(android.R.drawable.star_big_off)
+        }else{
+            Log.v("ADAPTER", "ADAPTER || updateFavouriteList || ADD")
+            repository.addFavouriteCourseList(data)
+            btnFavorite.setImageResource(android.R.drawable.star_big_on)
+        }
+        favouriteCourseList = getFavouriteCoursesList()
+        //setIconFavouriteCourse
+    }
+    fun getFavouriteCoursesList() : List<CourseBusinessModel>{
+        var favouriteCourseList = listOf<CourseBusinessModel>()
+        runBlocking {
+            GlobalScope.launch {
+                favouriteCourseList = repository.getFavouriteCouresList()
+            }.join()
+        }
+        return favouriteCourseList
+    }
+    fun setIconFavouriteCourse(id : Int, btnFavorite : ImageButton){
+        var favouriteCourseList = getFavouriteCoursesList()
+        //если нашли в списке избранных курсов
+        if(favouriteCourseList.find { course->course.id == id }!=null){
+            btnFavorite.setImageResource(android.R.drawable.star_big_on)
+        }else{
+            btnFavorite.setImageResource(android.R.drawable.star_big_off)
+        }
     }
 
     override fun getItemCount(): Int = courseList.size
