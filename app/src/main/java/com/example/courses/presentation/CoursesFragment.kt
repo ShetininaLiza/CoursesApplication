@@ -1,19 +1,26 @@
 package com.example.courses.presentation
 
+import android.app.ProgressDialog
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.annotation.RequiresApi
+import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
+import androidx.transition.Visibility
 import com.example.courses.R
 import com.example.courses.data.datastore.AppDatabase
 import com.example.courses.data.datastore.ServerDatastore
 import com.example.courses.data.datastore.ServerDatastore.CoursesResult
 import com.example.courses.data.repository.FavouriteCoursesRepository
+import com.example.courses.databinding.ActivityMainBinding
 import com.example.courses.domain.CourseBusinessModel
 import com.example.courses.presentation.customView.CourseItemViewAdapter
 import com.example.courses.presentation.mapper.CourseViewMapper
@@ -21,9 +28,11 @@ import com.example.courses.presentation.models.CourseViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
+import okhttp3.internal.wait
 
 class CoursesFragment : Fragment(R.layout.fragment_courses) {
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -34,7 +43,7 @@ class CoursesFragment : Fragment(R.layout.fragment_courses) {
     var courseList = emptyList<CourseViewModel>()
     var favoruriteCoursesList: List<CourseViewModel> = emptyList()
     lateinit var coursesRecycle: RecyclerView
-
+    var progressLoad : ProgressBar? = null
     lateinit var repository: FavouriteCoursesRepository
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -47,33 +56,47 @@ class CoursesFragment : Fragment(R.layout.fragment_courses) {
                 //.fallbackToDestructiveMigration(true)
                 .build() }
         repository = db.let {FavouriteCoursesRepository(it)}
-        //favoruriteCoursesList = repository.getFavouriteCouresList().map { mapper.map(it) }
         courseAdapter = CourseItemViewAdapter(repository)
+        //загрузка
+        progressLoad = view?.findViewById(R.id.progressLoad)
+        //отобоажаем загрузку
+        progressLoad?.visibility = View.VISIBLE
         runBlocking {
-            readData()
-            readFavouriteCourse()
+            load()
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
+    fun load(){
+        scope.async {
+            Log.v("FRAGMENT", "FRAGMENT_LAUNCH || LOAD")
+            readData()
+            readFavouriteCourse()
+            Log.v("FRAGMENT", "FRAGMENT_LAUNCH || LOAD DATA")
+        }
+    }
+    //метод для получения списка избранных курсов
+    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun readFavouriteCourse(){
         scope.launch {
+            Log.v("FRAGMENT", "FRAGMENT || readFavouriteCourse")
             val buf = repository.getFavouriteCouresList()
             favoruriteCoursesList = buf.map { mapper.map(it) }
         }.join()
-        Log.v("FRAGMENT", "FRAGMENT || SIZE ${favoruriteCoursesList.size}")
+        Log.v("FRAGMENT", "FRAGMENT || FavouriteCourse_SIZE ${favoruriteCoursesList.size}")
     }
 
-
+    //метод для получения курсов
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun readData(){
-        var job = scope.launch {
+        val job = scope.launch {
             // Ждём завершения запроса
             val result = store.getCoursesData()
             //когда все законсчилось
             when (result) {
                 is CoursesResult.Success -> {
-                    var courses = result.data
+                    Log.v("FRAGMENT", "get Course List")
+                    val courses = result.data
                     Log.v("FRAGMENT", "get Course List (buf) || ${courses.size}")
                     courseList = courses.map { mapper.map(it) }
                     Log.v("FRAGMENT", "get Course List || ${courseList.size}")
@@ -84,6 +107,7 @@ class CoursesFragment : Fragment(R.layout.fragment_courses) {
                     //showError("Ошибка загрузки: ${result.exception.message}")
                 }
             }
+            Log.v("FRAGMENT", "FRAGMENT || readData")
         }
         job.join()
     }
@@ -91,17 +115,24 @@ class CoursesFragment : Fragment(R.layout.fragment_courses) {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        coursesRecycle = view.findViewById<RecyclerView>(R.id.coursesList)
+        Log.v("CoursesFragment", "CoursesFragment || onViewCreated")
+        Log.v("LIST", "FAVOURITE COURSE LIST || ${favoruriteCoursesList?.size}")
+        Log.v("LIST", "COURSE LIST || ${courseList.size}")
+
+        //скрываем загрузку
+        progressLoad?.setVisibility(View.GONE)
+
+        //список курсов
+        coursesRecycle = view.findViewById(R.id.coursesList)
+
         coursesRecycle.layoutManager = LinearLayoutManager(view.context)
         courseAdapter.courseList = courseList
-        //var favoruriteCoursesList = repository.getFavouriteCouresList().map { mapper.map(it) }
 
-        Log.v("LIST", "FAVOURITE COURSE LIST || ${favoruriteCoursesList?.size}")
         if (favoruriteCoursesList.isNullOrEmpty())
             favoruriteCoursesList = emptyList()
         courseAdapter.favouriteCourseList = favoruriteCoursesList
         //courseAdapter.repository = repository
         coursesRecycle.adapter = courseAdapter
-        Log.v("FRAGMENT", "FRAGMENT || onViewCreated")
+        Log.v("FRAGMENT", "FRAGMENT || onViewCreated (2)")
     }
 }

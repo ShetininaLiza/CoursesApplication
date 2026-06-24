@@ -2,6 +2,7 @@ package com.example.courses.presentation
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -46,6 +47,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         super.onViewCreated(view, savedInstanceState)
         val btnNext = view.findViewById<Button>(R.id.btnNext)
         btnNext.setOnClickListener {
+            Log.v("LoginFragment", "LoginFragment || login")
             //переход в другой фрагмент
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.frameLayout, CoursesFragment())
